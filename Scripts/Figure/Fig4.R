@@ -18,10 +18,10 @@ source('./tools/MyPlot.R')
 
 std_mode= 'ydiff' 
 models = c(
-  'SAE_NC_R1',
+  'SAE',
   'NBE',
-  'AWAE_NC_R1',
-  'AWBE_NC_R1'
+  'AWAE',
+  'AWBE'
 )
 model_name_list = c('Simple Average Ensemble (SAE) Model', 
                     'Normal Blending Ensemble (NBE) Model',

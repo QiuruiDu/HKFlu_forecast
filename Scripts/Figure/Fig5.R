@@ -17,12 +17,9 @@ library(rugarch)
 library(scales)
 library(patchwork)
 
-# origin_path = '/Users/hkuph/richael/RA_academic/flu/SBEM_for_HKILI'
-# setwd(origin_path)
 
 source('./tools/MyPlot.R')
 
-# source(paste0(origin_path,'/Scripts/tools/MyPlot.R'))
 
 fig_type = 'Fig5_feature_importance'
 

@@ -278,7 +278,7 @@ class BLENDING():
         best_alpha = lasso_.alpha_ 
         print("best_alpha = ", best_alpha)
 
-        lasso1 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 默认alpha =1 
+        lasso1 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 
         lasso1.fit(df_bst_p1[model_list].values,df_bst_p1['true'])
         for ii in range(len(model_list)):
             print("-- ",model_list[ii], " : ",lasso1.coef_[ii])
@@ -291,7 +291,7 @@ class BLENDING():
         lasso_ = LassoCV(random_state = 2023, alphas=alpha_range,cv=5, fit_intercept = False).fit(df_bst_p2[model_list].values, df_bst_p2['true'], sample_weight = df_bst_p2['decay_coef'])
         best_alpha = lasso_.alpha_ 
         print("best_alpha = ", best_alpha)
-        lasso2 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 默认alpha =1 
+        lasso2 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 
         lasso2.fit(df_bst_p2[model_list].values,df_bst_p2['true'], sample_weight = df_bst_p2['decay_coef'])
         for ii in range(len(model_list)):
             print("-- ",model_list[ii], " : ",lasso2.coef_[ii])
@@ -398,7 +398,7 @@ class BLENDING():
         best_alpha = lasso_.alpha_ 
         print("best_alpha = ", best_alpha)
 
-        lasso1 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 默认alpha =1 
+        lasso1 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 
         lasso1.fit(df_bst_p1[model_list].values,df_bst_p1['true'])
         for ii in range(len(model_list)):
             print("-- ",model_list[ii], " : ",lasso1.coef_[ii])
@@ -413,7 +413,7 @@ class BLENDING():
         lasso_ = LassoCV(random_state = 2023, alphas=alpha_range,cv=5, fit_intercept = False).fit(df_bst_p2[model_list].values, df_bst_p2['true'], sample_weight = df_bst_p2['decay_coef'])
         best_alpha = lasso_.alpha_ 
         print("best_alpha = ", best_alpha)
-        lasso2 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 默认alpha =1 
+        lasso2 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 
         lasso2.fit(df_bst_p2[model_list].values,df_bst_p2['true'], sample_weight = df_bst_p2['decay_coef'])
         for ii in range(len(model_list)):
             print("-- ",model_list[ii], " : ",lasso2.coef_[ii])

@@ -23,7 +23,7 @@ from tools.plot import Plot_
 model_name = 'XGB_rolling'
 mode = 'test8_2023'
 test_start_date = '2005-11-01'
-test_end_date = None#'2016-06-30'
+test_end_date = None
 
 start_time = datetime.now()
 pwd=os.path.abspath(os.path.dirname(os.getcwd()))
@@ -96,10 +96,8 @@ def fit_and_predict(df, model, data_deal, train_datadict, pred_start, pred_end, 
     test_start_date = date_list[test_start_real_index]
     test_end_date = pred_end#+timedelta(days = (pred_horizon-1) * 7)
     
-    df_test_o = df.loc[(df.index >= test_start_date) & (df.index <= test_end_date),:]
-    
+    df_test_o = df.loc[(df.index >= test_start_date) & (df.index <= test_end_date),:] 
     df_test= data_deal.get_test_data(df_test_o)
-    
     x_test, y_test = df_test.iloc[:,0:-pred_horizon].values, df_test.iloc[:,-pred_horizon:].values
     
     # make prediction

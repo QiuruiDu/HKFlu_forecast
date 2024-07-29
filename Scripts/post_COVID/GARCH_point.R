@@ -56,7 +56,7 @@ for (iDate in seq_along(dates_analysis)){
   
   if (n_predictors>0){
     for (iCol in seq_along(list_col)){
-      # iCol = 1 
+      
       mycol<-list_col[iCol]
       
       for (lag in 1:max_lag){

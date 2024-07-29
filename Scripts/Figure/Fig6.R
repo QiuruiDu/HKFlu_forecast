@@ -25,8 +25,8 @@ source('./tools/MyPlot.R')
 fig_name = 'Fig6_trajectory_2023_0248'
 
 models = c(
-  'AWAE_NC_R1',
-  'AWBE_NC_R1'
+  'AWAE',
+  'AWBE'
 )
 model_name_list = c('Adaptive Weighted Average Ensemble (AWAE) Model',
                     'Adaptive Weighted Blending Ensemble (AWBE) Model')

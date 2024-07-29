@@ -27,7 +27,7 @@ from fastai.callback.tracker import SaveModelCallback
 model_name = 'InTimePlus_v3_nontuning_rolling_v2'
 mode = 'test8_2023'
 test_start_date = '2005-11-01'
-test_end_date = None#'2016-06-30'
+test_end_date = None#
 
 start_time = datetime.now()
 pwd=os.path.abspath(os.path.dirname(os.getcwd()))

@@ -25,7 +25,7 @@ from tools.plot import Plot_
 model_name = 'LSTM_v3_nontuning_rolling_v2'
 mode = 'test8_2023'
 test_start_date = '2005-11-01'
-test_end_date = None#'2016-06-30'
+test_end_date = None#
 
 start_time = datetime.now()
 pwd=os.path.abspath(os.path.dirname(os.getcwd()))
@@ -64,7 +64,6 @@ hidden_layers1 = trial.params['hidden_layers1']
 dropout_rate1 = trial.params['dropout_rate1']
 lr1 = trial.params["lr1"]
 batch_size1 = trial.params["batch_size1"]
-
 
 seq_length2 = trial.params['seq_length2']
 mid_dim2 = trial.params['mid_dim2']

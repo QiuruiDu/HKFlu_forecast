@@ -120,8 +120,8 @@ def SAE():
             col_name = 'point_avg'
             df_analysis_bst = get_bst_data(df_full_date_analysis, col_name)
             res_rmse = df_analysis_bst.groupby('model').apply(compute_rmse)
-            rmse_top3 = res_rmse.sort_values().head(3)
-            ensemble_list = rmse_top3.index.to_list()
+            rmse_top2 = res_rmse.sort_values().head(2)
+            ensemble_list = rmse_top2.index.to_list()
             print(ensemble_list)
 
             df_model_count = re_t[['week_ahead','model']].groupby('week_ahead').count()
@@ -140,12 +140,11 @@ def SAE():
     re1['model'] = model_name
     re1['region'] = 'HK'
     re1['date_origin'] = re1.apply(get_origin_date, axis = 1)
-    # val_true = re[['date','week_ahead','true']].groupby(['date','week_ahead']).mean().reset_index()
-    # re = pd.merge(re1, val_true, on=['date','week_ahead'], how='inner')
+    
     re_final = copy.deepcopy(re1[df_mt_o.columns])
     re_final['date'] = pd.to_datetime(re_final['date'])
 
-    if not os.path.exists(origin_path+f'/Results/Point/'):  #判断是否存在文件夹如果不存在则创建为文件夹
+    if not os.path.exists(origin_path+f'/Results/Point/'):  
         os.makedirs(origin_path+f'/Results/Point/')
     re_final.to_csv(f'{origin_path}/Results/Point/forecast_{model_name}_{mode}_2023.csv', index = False)
 
@@ -175,7 +174,6 @@ def AWAE(lambda_):
         df_test = pd.concat([df_test, df_mt_o])
 
     ######### read data that for 2023
-    ######### read data that for 2023
     pred_start_date = '2022-11-06'
     pred_end_date = pd.to_datetime('2024-03-10')+timedelta(days = 8 * 7)
     for m in model_list:
@@ -197,10 +195,9 @@ def AWAE(lambda_):
         df_analysis_bst = copy.deepcopy(df_analysis[['week_ahead','date',f'{point_col}','model']])
         df_analysis_bst['date_origin'] = df_analysis_bst.apply(get_origin_date, axis = 1)
         df_analysis_bst = df_analysis_bst.loc[df_analysis_bst['date_origin']>= rolling_start_date,:]
-        # df_analysis_bst = df_analysis_bst.pivot_table(index=['week_ahead','date'],columns='model',values=f'{point_col}').reset_index(drop = False)
+        
         df_analysis_bst['date'] = pd.to_datetime(df_analysis_bst['date'])
         df_analysis_bst = pd.merge(df_analysis_bst, df_analysis.loc[df_analysis['model'] == model_list[0],['date','week_ahead','true']], on=['date','week_ahead'], how='inner')
-        # df_analysis_bst = df_analysis_bst.dropna(axis = 0)
         
         return df_analysis_bst
 
@@ -229,15 +226,13 @@ def AWAE(lambda_):
     date_analysises = date_analysises[(date_analysises >= pd.to_datetime(pred_start_date))&(
         date_analysises <= pd.to_datetime(pred_end_date))]#-timedelta(days = 7*(max_pred_horizon))
     mu = 0
-    # col_include = ['date','true','week_ahead','model','coef_equal','decay_coef']
-    # col_include.extend([f'boot_{i}' for i in range(bootstap_times)])
+    
     re = pd.DataFrame()
     for l in range(len(date_analysises)):
         # l = 1
         print("-------------------------------------------  pred_date", date_analysises[l], '  ----------------------------------------------------')
         df_full_date_analysis = df_full.loc[df_full.date < pd.to_datetime(date_analysises[l]),:] # historical for train
         re_t = df_full.loc[df_full['date'] == date_analysises[l],:] # make forecast for the certain day 
-        # re_t = df_test_t[['date','week_ahead','true']].groupby(['date','week_ahead']).mean().reset_index()
         re_t['coef_equal'] = 0.0
         re_t['decay_coef'] = 0.0
         # get coef
@@ -249,12 +244,11 @@ def AWAE(lambda_):
                 # get coef
                 col_name = 'point_avg'
                 df_analysis_bst = get_bst_data(df_full_date_analysis_w, col_name)
-                # print("--- df_analysis_bst is ------")
-                # print(df_analysis_bst)
+                # 
                 res_rmse = df_analysis_bst.groupby('model').apply(compute_weighted_rmse, mode='Newton', lambda_ = lambda_)
                 print(type(res_rmse),"   ",res_rmse.shape)
-                rmse_top3 = res_rmse.sort_values().head(3)
-                ensemble_list = rmse_top3.index.to_list()
+                rmse_top2 = res_rmse.sort_values().head(2)
+                ensemble_list = rmse_top2.index.to_list()
 
                 print(ensemble_list)
 
@@ -268,8 +262,6 @@ def AWAE(lambda_):
             else:
                 print("Not exist.")
                 re_t = re_t.drop(re_t[re_t.week_ahead.isin(wi)].index)
-                # re_t[f'{col_name}'] = mu*re_t['pred_equal'].values+(1-mu)*re_t['pred_decay'].values
-                # re = pd.concat([re, re_t])
 
     print(re.columns)
 
@@ -278,17 +270,15 @@ def AWAE(lambda_):
     print("The running time totally =", (end_time-start_time).seconds," seconds.") 
 
     re1 = copy.deepcopy(re)
-    # model_name = 'Weighted-AE-Split'
     re1['var'] = 'iHosp'
     re1['model'] = model_name
     re1['region'] = 'HK'
     re1['date_origin'] = re1.apply(get_origin_date, axis = 1)
-    # val_true = re[['date','week_ahead','true']].groupby(['date','week_ahead']).mean().reset_index()
-    # re = pd.merge(re1, val_true, on=['date','week_ahead'], how='inner')
+
     re_final = copy.deepcopy(re1[df_mt_o.columns]) 
     re_final['date'] = pd.to_datetime(re_final['date'])
 
-    if not os.path.exists(origin_path+f'/Results/Point/'):  #判断是否存在文件夹如果不存在则创建为文件夹
+    if not os.path.exists(origin_path+f'/Results/Point/'):  
         os.makedirs(origin_path+f'/Results/Point/')
     re_final.to_csv(f'{origin_path}/Results/Point/forecast_{model_name}_{mode}_2023.csv', index = False)
 
@@ -356,16 +346,15 @@ def NBE():
         df_bst_p1 = copy.deepcopy(df_bst_analysis[model_list+['true']])
         # LassoCV
         lasso_ = LassoCV(random_state = 2023, alphas=alpha_range, cv=5, fit_intercept = False).fit(df_bst_p1[model_list].values,df_bst_p1['true'])
-        # 查看最佳正则化系数
+        # best alpha
         best_alpha = lasso_.alpha_ 
         print("best_alpha = ", best_alpha)
 
-        lasso1 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 默认alpha =1 
+        lasso1 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) 
         lasso1.fit(df_bst_p1[model_list].values,df_bst_p1['true'])
         for ii in range(len(model_list)):
             print("-- ",model_list[ii], " : ",lasso1.coef_[ii])
         print('---- val score = ', lasso1.score(df_bst_p1[model_list].values,df_bst_p1['true']))
-        # coef1 = lasso.coef_
 
         ############################# weighted lasso
         df_bst_p2 = copy.deepcopy(df_bst_analysis[model_list+['true','week_ahead','date']])
@@ -374,12 +363,12 @@ def NBE():
         lasso_ = LassoCV(random_state = 2023, alphas=alpha_range,cv=5, fit_intercept = False).fit(df_bst_p2[model_list].values, df_bst_p2['true'], sample_weight = df_bst_p2['decay_coef'])
         best_alpha = lasso_.alpha_ 
         print("best_alpha = ", best_alpha)
-        lasso2 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 默认alpha =1 
+        lasso2 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) 
         lasso2.fit(df_bst_p2[model_list].values,df_bst_p2['true'], sample_weight = df_bst_p2['decay_coef'])
         for ii in range(len(model_list)):
             print("-- ",model_list[ii], " : ",lasso2.coef_[ii])
         print('---- val score = ', lasso2.score(df_bst_p2[model_list].values,df_bst_p2['true'],sample_weight=df_bst_p2['decay_coef']))
-        # coef2 = lasso.coef_
+
         return lasso1, lasso2
     
     start_time = datetime.now()
@@ -387,10 +376,9 @@ def NBE():
     pred_end_date = pd.to_datetime('2024-03-10')+timedelta(days = 8 * 7)
     date_analysises = df_full.date.unique()
     date_analysises = date_analysises[(date_analysises >= pd.to_datetime(pred_start_date))&(
-        date_analysises <= pd.to_datetime(pred_end_date))]#-timedelta(days = 7*(max_pred_horizon))
+        date_analysises <= pd.to_datetime(pred_end_date))]
     mu = 1
-    # col_include = ['date','true','week_ahead','model','coef_equal','decay_coef']
-    # col_include.extend([f'boot_{i}' for i in range(bootstap_times)])
+
     re = pd.DataFrame()
     for l in range(len(date_analysises)):
         # l = 1
@@ -424,8 +412,6 @@ def NBE():
             else:
                 print("Not exist.")
                 re_t = re_t.drop(re_t[re_t.week_ahead.isin(wi)].index)
-                # re_t[f'{col_name}'] = mu*re_t['pred_equal'].values+(1-mu)*re_t['pred_decay'].values
-                # re = pd.concat([re, re_t])
 
     print(re.columns)
 
@@ -434,18 +420,15 @@ def NBE():
     print("The running time totally =", (end_time-start_time).seconds," seconds.") 
 
     re1 = copy.deepcopy(re)
-    # model_name = 'Weighted-AE-Split'
     re1['var'] = 'iHosp'
     re1['point'] = re1['point_avg']
     re1['model'] = model_name
     re1['region'] = 'HK'
     re1['date_origin'] = re1.apply(get_origin_date, axis = 1)
-    # val_true = re[['date','week_ahead','true']].groupby(['date','week_ahead']).mean().reset_index()
-    # re = pd.merge(re1, val_true, on=['date','week_ahead'], how='inner')
     re_final = copy.deepcopy(re1[df_mt_o.columns]) 
     re_final['date'] = pd.to_datetime(re_final['date'])
 
-    if not os.path.exists(origin_path+f'/Results/Point/'):  #判断是否存在文件夹如果不存在则创建为文件夹
+    if not os.path.exists(origin_path+f'/Results/Point/'):  
         os.makedirs(origin_path+f'/Results/Point/')
     re_final.to_csv(f'{origin_path}/Results/Point/forecast_{model_name}_{mode}_2023.csv', index = False)
 
@@ -512,11 +495,11 @@ def AWBE(lambda_):
         df_bst_p1 = copy.deepcopy(df_bst_analysis[model_list+['true']])
         # LassoCV
         lasso_ = LassoCV(random_state = 2023, alphas=alpha_range, cv=5, fit_intercept = False).fit(df_bst_p1[model_list].values,df_bst_p1['true'])
-        # 查看最佳正则化系数
+        # best alpha
         best_alpha = lasso_.alpha_ 
         print("best_alpha = ", best_alpha)
 
-        lasso1 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 默认alpha =1 
+        lasso1 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) #
         lasso1.fit(df_bst_p1[model_list].values,df_bst_p1['true'])
         for ii in range(len(model_list)):
             print("-- ",model_list[ii], " : ",lasso1.coef_[ii])
@@ -531,7 +514,7 @@ def AWBE(lambda_):
         lasso_ = LassoCV(random_state = 2023, alphas=alpha_range,cv=5, fit_intercept = False).fit(df_bst_p2[model_list].values, df_bst_p2['true'], sample_weight = df_bst_p2['decay_coef'])
         best_alpha = lasso_.alpha_ 
         print("best_alpha = ", best_alpha)
-        lasso2 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) # 默认alpha =1 
+        lasso2 = Lasso(random_state = 2023, alpha = best_alpha, fit_intercept = False) 
         lasso2.fit(df_bst_p2[model_list].values,df_bst_p2['true'], sample_weight = df_bst_p2['decay_coef'])
         for ii in range(len(model_list)):
             print("-- ",model_list[ii], " : ",lasso2.coef_[ii])
@@ -544,17 +527,15 @@ def AWBE(lambda_):
     date_analysises = df_full.date.unique()
     pred_end_date = pd.to_datetime('2024-03-10')+timedelta(days = 8 * 7)
     date_analysises = date_analysises[(date_analysises >= pd.to_datetime(pred_start_date))&(
-        date_analysises <= pd.to_datetime(pred_end_date))]#-timedelta(days = 7*(max_pred_horizon))
+        date_analysises <= pd.to_datetime(pred_end_date))]
     mu = 0
-    # col_include = ['date','true','week_ahead','model','coef_equal','decay_coef']
-    # col_include.extend([f'boot_{i}' for i in range(bootstap_times)])
+    
     re = pd.DataFrame()
     for l in range(len(date_analysises)):
         # l = 1
         print("-------------------------------------------  pred_date", date_analysises[l], '  ----------------------------------------------------')
         df_full_date_analysis = df_full.loc[df_full.date < pd.to_datetime(date_analysises[l]),:]
         re_t = df_full.loc[df_full['date'] == date_analysises[l],:]
-        # re_t = df_test_t[['date','week_ahead','true']].groupby(['date','week_ahead']).mean().reset_index()
         re_t['coef_equal'] = 0.0
         re_t['decay_coef'] = 0.0
         # get coef
@@ -578,15 +559,12 @@ def AWBE(lambda_):
                     re_t1.loc[re_t1['model'] == m,'coef_equal'] = coef1[i]
                     re_t1.loc[re_t1['model'] == m,'decay_coef'] = coef2[i]
                 re_t1[f'{col_name}'] = mu*(re_t1[f'{col_name}'].values * re_t1['coef_equal'].values)+(1-mu)*(re_t1[f'{col_name}'].values * re_t1['decay_coef'].values)
-                # re_t1[f'{col_name}'] = re_t1[f'{col_name}'].apply(lambda x: max(0, x))
                 re_t1['point'] = mu*(re_t1['point'].values * re_t1['coef_equal'].values)+(1-mu)*(re_t1['point'].values * re_t1['decay_coef'].values)
-                # re_t1['point'] = re_t1['point'].apply(lambda x: max(0, x))
+                
                 re = pd.concat([re, re_t1])
             else:
                 print("Not exist.")
                 re_t = re_t.drop(re_t[re_t.week_ahead.isin(wi)].index)
-                # re_t[f'{col_name}'] = mu*re_t['pred_equal'].values+(1-mu)*re_t['pred_decay'].values
-                # re = pd.concat([re, re_t])
 
     print(re.columns)
 
@@ -609,7 +587,7 @@ def AWBE(lambda_):
     re_final['point'] = re_final['point'].apply(lambda x: max(0, x))
     re_final = re_final.sort_values(by = ['date','week_ahead'])
 
-    if not os.path.exists(origin_path+f'/Results/Point/'):  #判断是否存在文件夹如果不存在则创建为文件夹
+    if not os.path.exists(origin_path+f'/Results/Point/'):  
         os.makedirs(origin_path+f'/Results/Point/')
     re_final.to_csv(f'{origin_path}/Results/Point/forecast_{model_name}_{mode}_2023.csv', index = False)
 

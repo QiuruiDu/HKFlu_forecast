@@ -30,10 +30,10 @@ models = c(
   'LSTM_v3_nontuning_rolling_v2',
   'GRU_v3_nontuning_rolling_v2',
   
-  'SAE_NC_R1',
+  'SAE',
   'NBE',
-  'AWAE_NC_R1',
-  'AWBE_NC_R1'
+  'AWAE',
+  'AWBE'
 )
 model_name_list = c()
 for(st in models){

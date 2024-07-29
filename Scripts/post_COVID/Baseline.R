@@ -37,7 +37,6 @@ model_name = 'baseline'
 
 library(msm)
 
-# function taken from https://github.com/sbfnk/covid19.forecasts.uk 
 null_model_forecast_quantiles <- function(values, horizon, truncation = 0)
 {
   # values = dat_train$iHosp_smooth
