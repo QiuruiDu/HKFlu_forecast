@@ -23,11 +23,11 @@ from tools.plot import Plot_
 model_name = 'xgb_rolling'
 mode = 'test8'
 test_start_date = '2005-11-01'
-test_end_date = None#'2016-06-30'
+test_end_date = None#
 
 start_time = datetime.now()
 pwd=os.path.abspath(os.path.dirname(os.getcwd()))
-origin_path = pwd#os.path.abspath(os.path.dirname(pwd)+os.path.sep+".") 
+origin_path = pwd
 print("pwd = ", pwd, ", origin_path = ", origin_path)
 path = origin_path + '/Data/rolling_data_after_covid.parquet'
 col_list = ['temp.max','temp.min', 'relative.humidity',
@@ -60,7 +60,7 @@ def cv_param(df, random_state, test_start, pred_horizon):
     ### train data prepare
     train_datadict, _ = data_deal.get_train_data(df_train, max_rate_lag=14, cov_list = cov_list, max_cov_lag=14, pred_horizon = pred_horizon, validation=False)
     x_train, y_train = train_datadict['x_data'], train_datadict['y_data']
-    # print(x_train.shape, y_train.shape)
+    
     params = {'max_depth': [3, 5, 7],
           'learning_rate': [0.1, 0.3, 0.5],
           'n_estimators': [50, 100, 200, 300],
@@ -71,7 +71,6 @@ def cv_param(df, random_state, test_start, pred_horizon):
           'random_state':[random_state]
           }
     mymodel.CV_train_(x_train, y_train, fold_num = 5, param_dict=params, iter_num=60)
-    # myrf.fit_(x_train, y_train)
 
     return mymodel, data_deal, train_datadict
 
@@ -87,13 +86,10 @@ def fit_and_predict(df, model, data_deal, train_datadict, pred_start, pred_end, 
     max_lag = data_deal.output_max_lag()
     test_start_date = pred_start+timedelta(days=-int(7*max_lag))
     test_end_date = pred_end#+timedelta(days = (pred_horizon-1) * 7)
-    # print("for generating predict data, start date = ",test_start_date,", end date = ",test_end_date )
     df_test_o = df.loc[(df.index >= test_start_date) & (df.index <= test_end_date),:]
-    # print("df_test_origin shape = ", df_test_o.shape, ", min date = ", df_test_o.index.min(),", max_date = ", df_test_o.index.max())
     df_test= data_deal.get_test_data(df_test_o)
-    # print("for df_test, min = ", df_test.index.min(),", max = ",df_test.index.max())
+    
     x_test, y_test = df_test.iloc[:,0:-pred_horizon].values, df_test.iloc[:,-pred_horizon:].values
-    # print(x_test.shape, y_test.shape)
     # make prediction
     y_test_hat = model.predict_(x_test)
     rate_max, rate_min = data_deal.output_rate_scaler()
@@ -114,7 +110,6 @@ cov_list = ['temp.max','temp.min', 'relative.humidity',
 
 df_test_total = copy.deepcopy(df.loc[df.index >= test_start_date,:])
 re_test_total = pd.DataFrame()
-# dr.origin_re_output(df_test, left_len=0, pred_len = pred_horizon, exp_mode=exp_mode)
 
 bootstrap_times = 1
 for i_date in range(len(rolling_dates)-1):
@@ -139,7 +134,7 @@ for i_date in range(len(rolling_dates)-1):
 re_test_total.rename(columns={'boot_0':'point'}, inplace=True)
 re_test_total['point_avg'] = re_test_total['point']
 
-# dr.point_write(re = re_test_total, origin_path=origin_path, mode = mode, model_name=model_name)
+dr.point_write(re = re_test_total, origin_path=origin_path, mode = mode, model_name=model_name)
 
 end_time = datetime.now()
 print("at the time<",start_time.strftime('%Y-%m-%d %H:%M:%S'),">, ",model_name," begin,"," at the time<",end_time.strftime('%Y-%m-%d %H:%M:%S'),"> finished.") 

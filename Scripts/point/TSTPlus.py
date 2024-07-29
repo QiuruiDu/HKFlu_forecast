@@ -29,11 +29,11 @@ from fastai.callback.tracker import SaveModelCallback
 model_name = 'TSTPlus_v3_nontuning_rolling_v2'
 mode = 'test8'
 test_start_date = '2005-11-01'
-test_end_date = None#'2016-06-30'
+test_end_date = None
 
 start_time = datetime.now()
 pwd=os.path.abspath(os.path.dirname(os.getcwd()))
-origin_path = pwd#os.path.abspath(os.path.dirname(pwd)+os.path.sep+".") 
+origin_path = pwd
 print("pwd = ", pwd, ", origin_path = ", origin_path)
 path = origin_path + '/Data/data_no_absent.csv'
 col_list = ['temp.max','temp.min', 'relative.humidity',
@@ -42,8 +42,6 @@ col_list = ['temp.max','temp.min', 'relative.humidity',
 dr = DataTool()
 df_o = dr.data_output(path, col_list, mode = 'log')
 df = copy.deepcopy(df_o)
-# df = df.loc[df.index>pd.to_datetime('2009-12-31'),:]
-# print("finally, start date = ", df.index.min())
 
 ############################################### modeling ##########################################
 study = joblib.load("./model_hyperparam/Separate_TSTPlus.pkl") #load
@@ -112,13 +110,12 @@ def one_bootstrap(i, df, test_size, total_pred_horizon):
     print(x_train2[splits2[0]].shape, y_train2[splits2[0]].shape)
     print(x_train2[splits2[1]].shape, y_train2[splits2[1]].shape)
     print(x_test2.shape, y_test2.shape)
-    # 替换rate为预估值
+    # replace 'rate' to the estimated one
     for i in range(x_test2.shape[0]):
         x_test2[i,-1,-1] = preds1[i]
     print(x_test2.shape, y_test2.shape)
     fcst2 = TSForecaster(x_train2, y_train2, splits=splits2, bs=b_s, arch="TSTPlus",
                                 metrics=mse, train_metrics=True, seed=i, verbose=False)
-    # arch_config={'n_heads':head, 'd_model':d_model, 'n_layers':depth,"dropout":dropout,"attn_dropout":att_dropout}, 
     fcst2.fit_one_cycle(50,lr_max=learning_rate, cbs=[SaveModelCallback(monitor='valid_loss')])
     raw_preds, target, preds2 = fcst2.get_X_preds(x_test2)
 
@@ -132,7 +129,6 @@ def one_bootstrap(i, df, test_size, total_pred_horizon):
 def one_rolling(df, test_start, test_end, pred_horizon, exp_mode = True, bootstrap_times = 100, random_state = None):
     df_t = copy.deepcopy(df.loc[df.index<=pd.to_datetime(test_end),:])
     test_size = df_t.loc[df_t.index > test_start,:].shape[0]
-    # print("---------------------------- test_start = ", test_start, ', test_end = ',test_end,', df_t shape = ',df_t.shape,', test_size = ', test_size)
     df_test = copy.deepcopy(df_t.loc[df_t.index >= test_start,:])
     re_test = dr.origin_re_output(df_test, left_len=0, pred_len = pred_horizon, exp_mode=exp_mode)
 
@@ -140,7 +136,7 @@ def one_rolling(df, test_start, test_end, pred_horizon, exp_mode = True, bootstr
         print("-------------------------- bootstrap = ", bst, " ----------------------------------")
         seed_ = random_state if random_state is not None else bst
         y_pred_i1,y_pred_i4 = one_bootstrap(seed_, df_t, test_size, total_pred_horizon=pred_stamp)
-        # print("pred_shape = ",y_pred_i.shape)
+        
         re_test_pred = pd.DataFrame(y_pred_i1[0:y_pred_i4.shape[0]], columns = [f'boot_{bst}'])
         re_test_pred['week_ahead'] = 0
         for i in range(pred_horizon-1):
@@ -159,7 +155,6 @@ rolling_dates.append(pd.to_datetime('2019-07-14')-timedelta(days = (pred_stamp-1
 
 df_test_total = copy.deepcopy(df.loc[df.index >= test_start_date,:])
 re_test_total = pd.DataFrame()
-# dr.origin_re_output(df_test, left_len=0, pred_len = pred_horizon, exp_mode=exp_mode)
 
 for i_date in range(len(rolling_dates)-1):
     test_start, test_end = rolling_dates[i_date], rolling_dates[i_date+1]+timedelta(days = (pred_stamp-1) * 7)
@@ -170,7 +165,7 @@ for i_date in range(len(rolling_dates)-1):
 ############################################### save ##########################################
 re_test_total.rename(columns={'boot_0':'point'}, inplace=True)
 re_test_total['point_avg'] = re_test_total['point']
-# dr.point_write(re = re_test_total, origin_path=origin_path, mode = mode, model_name=model_name)
+dr.point_write(re = re_test_total, origin_path=origin_path, mode = mode, model_name=model_name)
 
 end_time = datetime.now()
 print("at the time<",start_time.strftime('%Y-%m-%d %H:%M:%S'),">, ",model_name," begin,"," at the time<",end_time.strftime('%Y-%m-%d %H:%M:%S'),"> finished.") 

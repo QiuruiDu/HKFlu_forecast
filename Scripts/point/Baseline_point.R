@@ -10,8 +10,6 @@ library(tseries)
 library(cowplot)
 library(tidyr)
 
-# origin_path = '/Users/hkuph/richael/flu/SBEM_for_HKILI'
-# setwd(origin_path)
 data_rt<-readRDS("../Data/data_lograte.rds")
 data_rt$date <- as.Date(data_rt$date)
 data_rt$date <- as.Date(data_rt$date)
@@ -33,7 +31,6 @@ model_name = 'Baseline'
 
 library(msm)
 
-# function taken from https://github.com/sbfnk/covid19.forecasts.uk 
 null_model_forecast_quantiles <- function(values, horizon, truncation = 0)
 {
   # values = dat_train$iHosp_smooth

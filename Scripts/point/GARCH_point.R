@@ -1,5 +1,5 @@
 ########################################
-# 数据准备
+# preparation
 ########################################
 library(plyr)
 library(dplyr)
@@ -12,8 +12,7 @@ library(tseries)
 library(cowplot)
 library(tidyr)
 library(rugarch)
-# origin_path = '/Users/hkuph/richael/RA_academic/flu/SBEM_for_HKILI'
-# setwd(origin_path)
+
 data_rt<-readRDS("../Data/data_lograte.rds")
 data_rt$date <- as.Date(data_rt$date)
 data_rt$iHosp <- data_rt$log_10rate
@@ -37,7 +36,7 @@ max_prediction_horizon <- 8 + remove_last_n
 res<-tibble()
 
 for (iDate in seq_along(dates_analysis)){
-  # iDate = 1
+  # 
   set.seed(iDate)
   print(dates_analysis[iDate])
   dat_train<-data_rt %>%
@@ -196,11 +195,11 @@ col_list = c('date','true','week_ahead', 'point', "point_avg")
 res1 <- res1[, col_list]
 
 
-# ####save
-# if(dir.exists("../Results/Point/") == TRUE){
-#   write.csv(res1, paste0('../Results/Point/forecast_', model_name,'_',mode,'.csv'), row.names = FALSE)
-# }else{
-#   dir.create('../Results/Point/', recursive = TRUE)
-#   write.csv(res1, paste0('../Results/Point/forecast_', model_name,'_',mode,'.csv'), row.names = FALSE)
-# }
-# 
+####save
+if(dir.exists("../Results/Point/") == TRUE){
+  write.csv(res1, paste0('../Results/Point/forecast_', model_name,'_',mode,'.csv'), row.names = FALSE)
+}else{
+  dir.create('../Results/Point/', recursive = TRUE)
+  write.csv(res1, paste0('../Results/Point/forecast_', model_name,'_',mode,'.csv'), row.names = FALSE)
+}
+

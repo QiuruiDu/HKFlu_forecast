@@ -1,9 +1,6 @@
-# 测试并记录不使用多阶lag结果与现在结果的差异
-# 测试开始时间：20240318
 ########################################
-# 数据准备
+# preparation
 ########################################
-# 数据准备
 library(plyr)
 library(dplyr)
 library(tidyverse)
@@ -39,7 +36,7 @@ library(tibble)
 res<-tibble()
 
 for (iDate in seq_along(dates_analysis)){
-  # iDate = 1
+  # 
   set.seed(iDate)
   print(dates_analysis[iDate])
   dat_train<-data_rt %>%
@@ -192,11 +189,11 @@ col_list = c('date','true','week_ahead', 'point','point_avg')
 res1 <- res1[, col_list]
 
 
-# ## save
-# if(dir.exists("../Results/Point/") == TRUE){
-#   write.csv(res1, paste0('../Results/Point/forecast_', model_name,'_',mode,'.csv'), row.names = FALSE)
-# }else{
-#   dir.create('../Results/Point/', recursive = TRUE)
-#   write.csv(res1, paste0('../Results/Point/forecast_', model_name,'_',mode,'.csv'), row.names = FALSE)
-# }
+## save
+if(dir.exists("../Results/Point/") == TRUE){
+  write.csv(res1, paste0('../Results/Point/forecast_', model_name,'_',mode,'.csv'), row.names = FALSE)
+}else{
+  dir.create('../Results/Point/', recursive = TRUE)
+  write.csv(res1, paste0('../Results/Point/forecast_', model_name,'_',mode,'.csv'), row.names = FALSE)
+}
 

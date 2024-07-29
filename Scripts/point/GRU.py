@@ -25,11 +25,11 @@ from tools.plot import Plot_
 model_name = 'GRU_v3_nontuning_rolling_v2'
 mode = 'test8'
 test_start_date = '2005-11-01'
-test_end_date = None#'2016-06-30'
+test_end_date = None
 
 start_time = datetime.now()
 pwd=os.path.abspath(os.path.dirname(os.getcwd()))
-origin_path = pwd#os.path.abspath(os.path.dirname(pwd)+os.path.sep+".") 
+origin_path = pwd
 print("pwd = ", pwd, ", origin_path = ", origin_path)
 path = origin_path + '/Data/data_no_absent.csv'
 col_list = ['temp.max','temp.min', 'relative.humidity',
@@ -38,8 +38,7 @@ col_list = ['temp.max','temp.min', 'relative.humidity',
 dr = DataTool()
 df_o = dr.data_output(path, col_list, mode = 'log')
 df = copy.deepcopy(df_o)
-# df = df.loc[df.index>pd.to_datetime('2009-12-31'),:]
-# print("finally, start date = ", df.index.min())
+
 
 ############################################### modeling ##########################################
 study = joblib.load("./model_hyperparam/Separate_GRU.pkl") #load
@@ -55,7 +54,7 @@ hidden_layers1 = trial.params['hidden_layers1']
 dropout_rate1 = trial.params['dropout_rate1']
 lr1 = trial.params["lr1"]
 batch_size1 = trial.params["batch_size1"]
-# upper_weight1 = trial.params['upper_weight1']
+
 
 seq_length2 = trial.params['seq_length2']
 mid_dim2 = trial.params['mid_dim2']
@@ -63,7 +62,7 @@ hidden_layers2 = trial.params['hidden_layers2']
 dropout_rate2 = trial.params['dropout_rate2']
 lr2 = trial.params["lr2"]
 batch_size2 = trial.params["batch_size2"]
-# upper_weight2 = trial.params['upper_weight2']
+
 
 
 pred_stamp = 9
@@ -91,9 +90,7 @@ def one_bootstrap(i, df, test_size, total_pred_horizon = 5):
     _, y_test_pred1 = model_train1.predict_xy(x_test1, y_test1)
 
     ## week 8 : model building
-    # torch.manual_seed(i)
-    # random.seed(i)
-    # np.random.seed(i)
+    
     input_dim = df.shape[1]
     pred_stamp = total_pred_horizon - 1
     output_dim = pred_stamp
@@ -109,11 +106,11 @@ def one_bootstrap(i, df, test_size, total_pred_horizon = 5):
     # delay one day
     x_test4, y_test4 = test_datadict4['x_data'][1:,:,:], test_datadict4['y_data'][1:,:]
     for i in range(x_test4.shape[0]):
-        # 替换rate为预估值
+        # replace 'rate' to the estimated one
         x_test4[i,-1,-1] = torch.from_numpy(y_test_pred1[i])  
     _, y_test_pred4 = model_train4.predict_xy(x_test4, y_test4)
 
-    # 逆标准化
+    # inv-normalization
     y_test_pred1 = y_test_pred1*(rate_max1 - rate_min1)+rate_min1
     y_test_pred1 = np.exp(y_test_pred1)
     y_test_pred4 = y_test_pred4*(rate_max4 - rate_min4)+rate_min4
@@ -124,7 +121,7 @@ def one_bootstrap(i, df, test_size, total_pred_horizon = 5):
 def one_rolling(df, test_start, test_end, pred_horizon, exp_mode = True, bootstrap_times = 100, random_state = None):
     df_t = copy.deepcopy(df.loc[df.index <= pd.to_datetime(test_end),:])
     test_size = df_t.loc[df_t.index > test_start,:].shape[0]
-    # print("---------------------------- test_start = ", test_start, ', test_end = ',test_end,', df_t shape = ',df_t.shape,', test_size = ', test_size)
+    
     df_test = copy.deepcopy(df_t.loc[df_t.index >= test_start,:])
     re_test = dr.origin_re_output(df_test, left_len=0, pred_len = pred_horizon, exp_mode=exp_mode)
 
@@ -151,7 +148,6 @@ rolling_dates.append(pd.to_datetime('2019-07-14')-timedelta(days = (pred_stamp-1
 
 df_test_total = copy.deepcopy(df.loc[df.index > test_start_date,:])
 re_test_total = pd.DataFrame()
-# dr.origin_re_output(df_test, left_len=0, pred_len = pred_horizon, exp_mode=exp_mode)
 
 for i_date in range(len(rolling_dates)-1):
     test_start, test_end = rolling_dates[i_date], rolling_dates[i_date+1]+timedelta(days = (pred_stamp-1) * 7)
@@ -162,7 +158,7 @@ for i_date in range(len(rolling_dates)-1):
 ############################################### save ##########################################
 re_test_total.rename(columns={'boot_0':'point'}, inplace=True)
 re_test_total['point_avg'] = re_test_total['point']
-# dr.point_write(re = re_test_total, origin_path=origin_path, mode = mode, model_name=model_name)
+dr.point_write(re = re_test_total, origin_path=origin_path, mode = mode, model_name=model_name)
 
 end_time = datetime.now()
 print("at the time<",start_time.strftime('%Y-%m-%d %H:%M:%S'),">, ",model_name," begin,"," at the time<",end_time.strftime('%Y-%m-%d %H:%M:%S'),"> finished.") 

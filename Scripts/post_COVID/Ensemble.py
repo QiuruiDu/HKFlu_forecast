@@ -31,7 +31,7 @@ else:
      max_pred_horizon = 4
 
 pwd=os.path.abspath(os.path.dirname(os.getcwd()))
-origin_path = pwd#os.path.abspath(os.path.dirname(pwd)+os.path.sep+".")
+origin_path = pwd
 model_path = origin_path + '/Results/Point/'
 rolling_start_date = pd.to_datetime('2003-11-01')
 
