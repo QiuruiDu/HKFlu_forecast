@@ -1,0 +1,151 @@
+################################################################################
+# read data
+################################################################################
+# 进行结果的计???
+library(plyr)
+library(dplyr)
+library(tidyverse)
+library(ISOweek)
+library(locpol)
+library(forecast)
+library(scoringutils)
+library(ggplot2)
+library(RColorBrewer)
+library(gridExtra)
+library(cowplot)
+library(data.table)
+setwd('/Users/hkuph/richael/RA_academic/flu/SBEM_for_HKILI/Scripts/tools')
+source('MyPlot.R')
+###########################################
+# preparation
+###########################################
+origin_path = '/Users/hkuph/richael/RA_academic/flu/SBEM_for_HKILI'
+setwd(origin_path)
+models = c(
+  'Baseline', 
+  'ARIMA_rolling',
+  'GARCH_rolling',
+  'RF_rolling',
+  'XGB_rolling',
+  'InTimePlus_v3_nontuning_rolling_v2',
+  'TSTPlus_v3_nontuning_rolling',
+  'LSTM_v3_nontuning_rolling_v2',
+  'GRU_v3_nontuning_rolling_v2',
+  'GRU-EarlyStopping_v3_nontuning_rolling_v2',
+  
+  'SAE_NC_R1',
+  'NBE',
+  'AWAE_NC_R1',
+  'AWBE_NC_R1'
+)
+
+
+mode = 'test8'
+std_mode = 'ydiff'
+dates_analysis_test <- seq(as.Date("2007-11-04"),as.Date("2019-07-14"),by="week")
+dates_gap = seq(as.Date("2009-04-05"),as.Date("2010-03-21"),by="week")
+if(mode == 'test4'){
+  pred_horizon = 5
+}else{
+  pred_horizon = 9
+}
+
+################################################################################
+# prepare data
+################################################################################
+proj<-tibble()
+for (model in models){
+  # model = 'Weighted-ABE'
+  # model= 'Baseline'
+  # print(model)
+  path_ = paste0(origin_path, '/Results/Interval_',std_mode,'_pred/interval_',model,'_',mode,'.csv')
+  if(file.exists(path_)){
+    proj_tmp<-read.csv(file=path_,stringsAsFactors =F)
+    
+    proj_tmp$model = model
+    # date_origin_max = max(dates_analysis_test)-(pred_horizon-1)*7
+    # date_origin_min = min(dates_analysis_test)
+    # proj_tmp = proj_tmp %>%
+    #   mutate(date=as.Date(date)) %>%
+    #   mutate(point = point_avg) %>%
+    #   mutate(date_origin=date-week_ahead*7) %>%
+    #   filter(date_origin >= date_origin_min) %>%
+    #   filter(date_origin <= date_origin_max) 
+    # std_length = length(proj_tmp$week_ahead[which(proj_tmp$week_ahead == (pred_horizon-1))])
+    # proj_tmp = proj_tmp %>%
+    #   arrange(week_ahead, date)
+    # proj_tmp$rank <- ave(1:nrow(proj_tmp), proj_tmp$week_ahead,FUN=seq_along)
+    # proj_tmp <- proj_tmp[which(proj_tmp$rank <= std_length),]
+    # proj_tmp = proj_tmp %>% dplyr::select(-rank)
+    
+    proj_tmp = proj_tmp %>%
+        mutate(date=as.Date(date)) %>%
+        mutate(point = point_avg) %>%
+        mutate(date_origin=date-week_ahead*7) %>%
+        filter(date >= min(dates_analysis_test)) %>%
+        filter(date <= max(dates_analysis_test)) #%>%
+      # filter(date_origin >= min(dates_analysis_test))
+    
+    proj_tmp = proj_tmp[which((proj_tmp$date_origin < min(dates_gap))|(proj_tmp$date_origin > max(dates_gap))),]
+    print(paste0('------ model = ',strsplit(model, '_', fixed = F, perl = F, useBytes = F)[[1]][1], 
+                 ', data length = ',dim(proj_tmp)[1], ', ',dim(proj_tmp)[2]))
+    proj<-rbind.fill(proj,proj_tmp)
+  }
+}
+proj$model<-factor(proj$model,levels=models, ordered=T)
+
+proj.mode <- proj %>%
+  mutate(inclusion = 1) %>%
+  mutate(var="iHosp")
+
+
+################################################################################
+# for test and val
+################################################################################
+my.eval = function(proj.df, eval_mode){
+  if(eval_mode == 'test8'){
+    dates_analysis = dates_analysis_test
+  }else{
+    dates_analysis = dates_analysis_val
+  }
+  proj.mode = proj.df %>%
+    filter(date >= min(dates_analysis)) %>%
+    filter(date <= max(dates_analysis))
+  for(m in unique(proj.mode$model)){
+    print(paste0(m," --- ",dim(proj.mode[which(proj.mode$model == m),])[1]))
+  }
+  
+  res<-my.compute(proj.mode)
+  evual_result<-res %>%
+    filter(inclusion==1) %>% 
+    filter(var=="iHosp") %>% 
+    mutate(week_ahead=as.factor(week_ahead)) %>%
+    group_by(model,var,week_ahead) %>%
+    dplyr::summarize(rmse = sqrt(mean(abs_error^2,na.rm=T)) ,
+                     mape = (mean(abs_error/abs(true),na.rm=T)), 
+                     smape = (mean(abs_error/(abs(point)+abs(true))*2,na.rm=T)),
+                     mae = mean(abs_error, na.rm=T),
+                     avg_wis = mean(wis, na.rm = T))%>%
+    ungroup() 
+  
+  index_list = c('rmse','mae','smape','avg_wis')
+  re_evual_result = dcast(data.table(evual_result), model + var~week_ahead, value.var = 'mape')
+  start_ = 4-1
+  end_ = 4+(pred_horizon-1)-1
+  names(re_evual_result)[start_:end_] <- paste0('mape',0:(pred_horizon-1))
+  for(c in index_list){
+    re_c = dcast(data.table(evual_result), model + var~week_ahead, value.var = c)
+    names(re_c)[start_:end_] <- paste0(c,0:(pred_horizon-1))
+    re_evual_result = cbind(re_evual_result,re_c[,start_:end_])
+  }
+  result_save_path = paste0(origin_path,'/Results/evaluation_',eval_mode,'.csv') #_split_season
+  write.csv(re_evual_result, file = result_save_path, row.names = FALSE)
+}
+
+
+# my.eval(proj.df = proj.mode, eval_mode = 'val8')
+my.eval(proj.df = proj.mode, eval_mode = 'test8')
+
+
+
+

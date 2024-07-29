@@ -1,0 +1,26 @@
+{
+    "id": "8F04ADED",
+    "path": "~/richael/RA_academic/flu/HKFlu_forecast/Scripts/post_COVID/GARCH_point.R",
+    "project_path": "post_COVID/GARCH_point.R",
+    "type": "r_source",
+    "hash": "1735201747",
+    "contents": "",
+    "dirty": false,
+    "created": 1720975952657.0,
+    "source_on_save": false,
+    "relative_order": 11,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "1,13",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1720977187,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1720977187783,
+    "read_only": false,
+    "read_only_alternatives": []
+}

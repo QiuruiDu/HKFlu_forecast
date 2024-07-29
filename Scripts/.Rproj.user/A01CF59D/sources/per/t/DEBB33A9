@@ -1,0 +1,26 @@
+{
+    "id": "DEBB33A9",
+    "path": "~/richael/RA_academic/flu/HKFlu_forecast/Scripts/Figure/Fig1.R",
+    "project_path": "Figure/Fig1.R",
+    "type": "r_source",
+    "hash": "2550733265",
+    "contents": "",
+    "dirty": false,
+    "created": 1720674417232.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "188,12",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1720675163,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1720675163691,
+    "read_only": false,
+    "read_only_alternatives": []
+}
